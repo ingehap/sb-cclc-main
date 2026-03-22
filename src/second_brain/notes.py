@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from datetime import date, datetime
 from pathlib import Path
 
 
 def slugify(title: str) -> str:
     """Convert a title string into a filename-safe slug."""
-    slug = title.lower()
+    slug = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
+    slug = slug.lower()
     slug = re.sub(r"[^a-z0-9\s-]", "", slug)
     slug = re.sub(r"[\s-]+", "-", slug)
     slug = slug.strip("-")
@@ -43,5 +45,7 @@ def create_note(
     path = build_note_path(title, base_dir, now.date())
     timestamp = now.replace(microsecond=0).isoformat()
     content = f"# {title}\n\n{timestamp}\n"
-    path.write_text(content, encoding="utf-8")
+    # Use exclusive creation to avoid race conditions with duplicate filenames.
+    with open(path, "x", encoding="utf-8") as fh:
+        fh.write(content)
     return path.resolve()

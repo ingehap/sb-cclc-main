@@ -76,4 +76,4 @@ def show(number: int):
         )
         raise SystemExit(1)
 
-    click.echo(files[number - 1].read_text())
+    click.echo(files[number - 1].read_text(encoding="utf-8"))

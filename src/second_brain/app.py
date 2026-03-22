@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 from loguru import logger
 
@@ -39,7 +40,11 @@ def configure_logging():
     import os
 
     log_level = os.environ.get("LOG_LEVEL", "INFO")
-    log_file = os.environ.get("LOG_FILE", "app.log")
+    default_log = str(
+        Path(os.environ.get("SECOND_BRAIN_DIR", str(Path.home() / "second_brain")))
+        / "app.log"
+    )
+    log_file = os.environ.get("LOG_FILE", default_log)
     logger.remove()
     logger.add(sys.stderr, level=log_level, format=console_format)
     logger.add(log_file, level="DEBUG", rotation="50 KB", retention=1)
