@@ -126,7 +126,7 @@ def test_cli_list_sorted_newest_first(tmp_note_dir):
     result = runner.invoke(cli, ["list"])
     assert result.exit_code == 0
     lines = result.output.strip().splitlines()
-    numbered = [l for l in lines if l and l[0].isdigit()]
+    numbered = [line for line in lines if line and line[0].isdigit()]
     assert "20260322-new.md" in numbered[0]
     assert "20260320-old.md" in numbered[1]
 
@@ -226,3 +226,13 @@ def test_cli_show_missing_argument():
     result = runner.invoke(cli, ["show"])
     assert result.exit_code != 0
     assert "Missing argument" in result.output
+
+
+def test_cli_show_utf8_roundtrip(tmp_note_dir):
+    """Notes with non-ASCII content should round-trip correctly (issue #1)."""
+    tmp_note_dir.mkdir(parents=True)
+    content = "# Crème brûlée\n\n2026-03-22T14:30:00\n"
+    (tmp_note_dir / "20260322-creme-brulee.md").write_text(content, encoding="utf-8")
+    result = runner.invoke(cli, ["show", "1"])
+    assert result.exit_code == 0
+    assert "Crème brûlée" in result.output

@@ -20,7 +20,7 @@ from second_brain.notes import build_note_path, create_note, slugify
         ("--leading and trailing--", "leading-and-trailing"),
         ("", "untitled"),
         ("@#$%^&", "untitled"),
-        ("cafe latte", "cafe-latte"),
+        ("café latte", "cafe-latte"),
         ("idea 42 is great", "idea-42-is-great"),
     ],
     ids=[
@@ -30,7 +30,7 @@ from second_brain.notes import build_note_path, create_note, slugify
         "leading_trailing",
         "empty",
         "only_special",
-        "unicode_ascii",
+        "unicode_normalized",
         "numbers_preserved",
     ],
 )
@@ -126,3 +126,12 @@ def test_create_note_multiple_duplicates(tmp_path):
     assert path1.is_file() and path2.is_file() and path3.is_file()
     assert path2.name.endswith("-1.md")
     assert path3.name.endswith("-2.md")
+
+
+def test_create_note_atomic_no_overwrite(tmp_path):
+    """Two notes with the same title must both exist with correct content (issue #2)."""
+    path1 = create_note("Same title", tmp_path, now=FIXED_NOW)
+    path2 = create_note("Same title", tmp_path, now=FIXED_NOW)
+    assert path1 != path2
+    assert "# Same title" in path1.read_text(encoding="utf-8")
+    assert "# Same title" in path2.read_text(encoding="utf-8")
